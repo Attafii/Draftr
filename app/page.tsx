@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { Download, FileText, Sparkles, Trash2 } from "lucide-react";
 
 import { MagicUploadZone } from "@/components/landing/magic-upload-zone";
+import { ToolSuite } from "@/components/landing/tool-suite";
 import { AISidebar } from "@/components/workspace/ai-sidebar";
 import { LeftPanelPreview } from "@/components/workspace/left-panel-preview";
 import { RightPanelOutput } from "@/components/workspace/right-panel-output";
@@ -12,6 +13,8 @@ import { draftrSpring } from "@/lib/animation";
 import { type AiInsight, type AiMode, type ConvertedDocument } from "@/lib/document";
 import { convertDocument } from "@/lib/document-client";
 import { downloadMarkdownFile, downloadPdfFile } from "@/lib/download";
+import { canRedoRevision, canUndoRevision, createRevisionEntry, emptyRevisionHistory, getActiveRevision, revisionHistoryReducer } from "@/lib/revision-history";
+import { resolveWorkingText } from "@/lib/workspace";
 
 type AiStatus = "idle" | "loading" | "ready" | "error";
 
@@ -21,7 +24,9 @@ interface AiResponse extends AiInsight {
 
 export default function HomePage() {
   const [document, setDocument] = useState<ConvertedDocument | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [editorText, setEditorText] = useState("");
+  const [revisionHistory, dispatchRevision] = useReducer(revisionHistoryReducer, emptyRevisionHistory);
   const [aiOpen, setAiOpen] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const [conversionError, setConversionError] = useState<string | null>(null);
@@ -30,30 +35,81 @@ export default function HomePage() {
   const [aiLoadingMode, setAiLoadingMode] = useState<AiMode | null>(null);
   const [aiRequest, setAiRequest] = useState("Fix structure, improve clarity, and enhance the file.");
   const [aiError, setAiError] = useState<string | null>(null);
+  const suppressHistoryCommitRef = useRef(false);
+  const manualEditTimerRef = useRef<number | null>(null);
 
   const modelName = process.env.NEXT_PUBLIC_NVIDIA_MODEL ?? "meta/llama-3.1-405b-instruct";
 
   const isWorkspace = document !== null;
 
   useEffect(() => {
+    return () => {
+      if (fileUrl) {
+        URL.revokeObjectURL(fileUrl);
+      }
+    };
+  }, [fileUrl]);
+
+  useEffect(() => {
     if (document) {
-      setEditorText(document.convertedText);
+      suppressHistoryCommitRef.current = true;
+      dispatchRevision({
+        type: "reset",
+        entry: createRevisionEntry({
+          label: "Imported document",
+          source: "upload",
+          mode: null,
+          text: document.convertedText,
+        }),
+      });
     } else {
-      setEditorText("");
+      suppressHistoryCommitRef.current = true;
+      dispatchRevision({ type: "clear" });
     }
   }, [document]);
 
+  useEffect(() => {
+    const activeRevision = getActiveRevision(revisionHistory);
+
+    suppressHistoryCommitRef.current = true;
+    setEditorText(activeRevision?.text ?? "");
+  }, [revisionHistory]);
+
+  useEffect(() => {
+    if (!document) {
+      return;
+    }
+
+    if (suppressHistoryCommitRef.current) {
+      suppressHistoryCommitRef.current = false;
+      return;
+    }
+
+    if (manualEditTimerRef.current !== null) {
+      window.clearTimeout(manualEditTimerRef.current);
+    }
+
+    manualEditTimerRef.current = window.setTimeout(() => {
+      dispatchRevision({
+        type: "push",
+        entry: createRevisionEntry({
+          label: "Manual edit",
+          source: "manual",
+          mode: null,
+          text: editorText,
+        }),
+      });
+    }, 600);
+
+    return () => {
+      if (manualEditTimerRef.current !== null) {
+        window.clearTimeout(manualEditTimerRef.current);
+      }
+    };
+  }, [document, editorText]);
+
   const applyEditorText = (value: string) => {
     setEditorText(value);
-    setDocument((current) =>
-      current
-        ? {
-            ...current,
-            sourceText: value,
-            convertedText: value,
-          }
-        : current,
-    );
   };
 
   const handleFilesSelected = async (selectedFiles: File[]) => {
@@ -70,12 +126,22 @@ export default function HomePage() {
     setAiStatus("idle");
     setAiError(null);
 
+    let objectUrl: string | null = null;
+
     try {
+      objectUrl = URL.createObjectURL(file);
       const payload = await convertDocument(file);
       setDocument(payload);
       setEditorText(payload.convertedText);
+      setFileUrl(objectUrl);
+      objectUrl = null;
     } catch (error) {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+
       setDocument(null);
+      setFileUrl(null);
       setConversionError(error instanceof Error ? error.message : "Conversion failed.");
     } finally {
       setIsConverting(false);
@@ -84,6 +150,7 @@ export default function HomePage() {
 
   const resetWorkspace = () => {
     setDocument(null);
+    setFileUrl(null);
     setEditorText("");
     setAiOpen(false);
     setConversionError(null);
@@ -103,6 +170,8 @@ export default function HomePage() {
     setAiLoadingMode(mode);
     setAiError(null);
 
+    const workingText = resolveWorkingText(document, editorText);
+
     try {
       const response = await fetch("/api/ai", {
         method: "POST",
@@ -112,7 +181,7 @@ export default function HomePage() {
         body: JSON.stringify({
           fileName: document.fileName,
           kind: document.kind,
-          text: editorText || document.convertedText,
+          text: workingText,
           mode,
           instruction: mode === "rewrite" ? aiRequest : "",
         }),
@@ -128,7 +197,17 @@ export default function HomePage() {
       setAiStatus("ready");
 
       if (mode === "rewrite" && payload.revisedText.trim().length > 0) {
-        applyEditorText(payload.revisedText);
+        suppressHistoryCommitRef.current = true;
+        setEditorText(payload.revisedText);
+        dispatchRevision({
+          type: "push",
+          entry: createRevisionEntry({
+            label: "AI rewrite",
+            source: "ai",
+            mode: "rewrite",
+            text: payload.revisedText,
+          }),
+        });
       }
     } catch (error) {
       setAiInsight(null);
@@ -169,19 +248,27 @@ export default function HomePage() {
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="button"
-                        onClick={() => void downloadPdfFile(document.fileName, editorText || document.convertedText)}
+                        onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "clean" })}
                         className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
                       >
                         <Download className="h-3.5 w-3.5 stroke-[1.25]" />
-                        PDF
+                        Clean PDF
                       </button>
                       <button
                         type="button"
-                        onClick={() => downloadMarkdownFile(document.fileName, editorText || document.convertedText)}
+                        onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "print" })}
                         className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
                       >
                         <Download className="h-3.5 w-3.5 stroke-[1.25]" />
-                        MD
+                        Print PDF
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadMarkdownFile(document.fileName, resolveWorkingText(document, editorText), { preset: "normalized" })}
+                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                      >
+                        <Download className="h-3.5 w-3.5 stroke-[1.25]" />
+                        Normalized MD
                       </button>
                       <button
                         type="button"
@@ -208,6 +295,7 @@ export default function HomePage() {
                   <div className="grid flex-1 grid-cols-1 xl:grid-cols-[minmax(0,1fr)_0.5px_minmax(0,1fr)]">
                     <LeftPanelPreview
                       document={document}
+                      fileUrl={fileUrl}
                       editorText={editorText}
                       onEditorTextChange={applyEditorText}
                       isLoading={isConverting}
@@ -234,7 +322,15 @@ export default function HomePage() {
                   </div>
 
                   <div className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
-                    <MagicUploadZone onFilesSelected={handleFilesSelected} isBusy={isConverting} />
+                    <div className="flex w-full max-w-5xl flex-col gap-10">
+                      <MagicUploadZone onFilesSelected={handleFilesSelected} isBusy={isConverting} />
+                      <ToolSuite
+                        currentDocument={document}
+                        onEditShortcut={() => {
+                          window.document.getElementById("magic-upload-zone")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      />
+                    </div>
                   </div>
 
                   {conversionError ? (
@@ -261,8 +357,16 @@ export default function HomePage() {
         errorMessage={aiError}
         requestText={aiRequest}
         onRequestTextChange={setAiRequest}
+        onPresetSelect={setAiRequest}
         onAnalyze={() => void requestAi("analyze")}
         onEnhance={() => void requestAi("rewrite")}
+        revisionEntries={revisionHistory.entries}
+        revisionIndex={revisionHistory.index}
+        canUndo={canUndoRevision(revisionHistory)}
+        canRedo={canRedoRevision(revisionHistory)}
+        onUndo={() => dispatchRevision({ type: "undo" })}
+        onRedo={() => dispatchRevision({ type: "redo" })}
+        onJumpRevision={(index) => dispatchRevision({ type: "jump", index })}
       />
     </main>
   );

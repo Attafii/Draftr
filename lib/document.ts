@@ -1,5 +1,62 @@
 export type DocumentKind = "pdf" | "markdown";
 export type AiMode = "analyze" | "rewrite";
+export type RevisionSource = "upload" | "manual" | "ai";
+export type AnnotationKind = "highlight" | "underline" | "note";
+
+export interface RevisionEntry {
+  id: string;
+  label: string;
+  source: RevisionSource;
+  mode: AiMode | null;
+  text: string;
+  timestamp: string;
+}
+
+export interface DocumentHeading {
+  id: string;
+  title: string;
+  level: number;
+  lineNumber: number;
+  offset: number;
+}
+
+export interface SearchHit {
+  id: string;
+  lineNumber: number;
+  lineText: string;
+  startIndex: number;
+  endIndex: number;
+}
+
+export interface RelativeRect {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+export interface PdfAnnotation {
+  id: string;
+  pageNumber: number;
+  kind: AnnotationKind;
+  text: string;
+  note: string;
+  rects: RelativeRect[];
+}
+
+export interface PdfSelection {
+  pageNumber: number;
+  text: string;
+  rects: RelativeRect[];
+  anchorRect: RelativeRect;
+}
+
+export interface DiffRow {
+  lineNumber: number;
+  before: string;
+  after: string;
+  changed: boolean;
+}
 
 export interface ConvertedDocument {
   fileName: string;
@@ -121,6 +178,94 @@ export function stripFileExtension(fileName: string): string {
 
 export function buildExportFileName(fileName: string, extension: "md" | "pdf"): string {
   return `${stripFileExtension(fileName)}-converted.${extension}`;
+}
+
+export function normalizeMarkdownExport(text: string): string {
+  return text
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+export function extractDocumentHeadings(text: string): DocumentHeading[] {
+  const lines = text.replace(/\r\n/g, "\n").replace(/\u0000/g, "").split("\n");
+  const headings: DocumentHeading[] = [];
+
+  lines.forEach((line, lineIndex) => {
+    const markdownHeading = line.match(/^(#{1,6})\s+(.+)$/);
+
+    if (markdownHeading) {
+      headings.push({
+        id: `heading-${lineIndex + 1}`,
+        title: markdownHeading[2].trim(),
+        level: markdownHeading[1].length,
+        lineNumber: lineIndex + 1,
+        offset: lines.slice(0, lineIndex).join("\n").length + (lineIndex > 0 ? 1 : 0),
+      });
+      return;
+    }
+
+    const trimmed = line.trim();
+    const isLikelyHeading =
+      trimmed.length > 0 &&
+      trimmed.length <= 80 &&
+      !/[.!?]$/.test(trimmed) &&
+      (trimmed === trimmed.toUpperCase() || /^[A-Z][A-Za-z0-9\s:&,-]+$/.test(trimmed));
+
+    if (isLikelyHeading) {
+      headings.push({
+        id: `heading-${lineIndex + 1}`,
+        title: trimmed,
+        level: 2,
+        lineNumber: lineIndex + 1,
+        offset: lines.slice(0, lineIndex).join("\n").length + (lineIndex > 0 ? 1 : 0),
+      });
+    }
+  });
+
+  return headings;
+}
+
+export function searchDocumentText(text: string, query: string): SearchHit[] {
+  const trimmedQuery = query.trim();
+
+  if (trimmedQuery.length === 0) {
+    return [];
+  }
+
+  const lines = text.replace(/\r\n/g, "\n").replace(/\u0000/g, "").split("\n");
+  const lowerQuery = trimmedQuery.toLowerCase();
+  const results: SearchHit[] = [];
+
+  lines.forEach((line, lineIndex) => {
+    const lineLower = line.toLowerCase();
+    const startIndex = lineLower.indexOf(lowerQuery);
+
+    if (startIndex >= 0) {
+      results.push({
+        id: `hit-${lineIndex + 1}-${startIndex}`,
+        lineNumber: lineIndex + 1,
+        lineText: line.trim(),
+        startIndex,
+        endIndex: startIndex + trimmedQuery.length,
+      });
+    }
+  });
+
+  return results;
+}
+
+export function buildLineDiff(before: string, after: string, limit = 40): DiffRow[] {
+  const beforeLines = normalizeDocumentText(before).split("\n");
+  const afterLines = normalizeDocumentText(after).split("\n");
+  const totalLines = Math.min(Math.max(beforeLines.length, afterLines.length), limit);
+
+  return Array.from({ length: totalLines }, (_, index) => ({
+    lineNumber: index + 1,
+    before: beforeLines[index] ?? "",
+    after: afterLines[index] ?? "",
+    changed: (beforeLines[index] ?? "") !== (afterLines[index] ?? ""),
+  }));
 }
 
 export function extractTopKeywords(text: string, count = 4): string[] {

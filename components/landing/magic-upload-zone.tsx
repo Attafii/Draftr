@@ -110,7 +110,7 @@ export function MagicUploadZone({ onFilesSelected, className, isBusy = false }: 
   };
 
   return (
-    <div className={cn("relative w-full max-w-3xl p-px", className)}>
+    <div id="magic-upload-zone" className={cn("relative w-full max-w-3xl p-px", className)}>
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,255,255,0)_0deg,rgba(255,255,255,0.12)_50deg,rgba(255,255,255,0)_120deg,rgba(255,255,255,0.28)_210deg,rgba(255,255,255,0)_290deg,rgba(255,255,255,0.12)_360deg)] opacity-0 blur-[1px]"
