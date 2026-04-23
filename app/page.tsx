@@ -2,8 +2,9 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
-import { Download, FileText, Sparkles, Trash2 } from "lucide-react";
+import { ArrowRight, Download, FileText, Sparkles, Trash2 } from "lucide-react";
 
+import { BrandMark } from "@/components/brand-mark";
 import { MagicUploadZone } from "@/components/landing/magic-upload-zone";
 import { ToolSuite } from "@/components/landing/tool-suite";
 import { AISidebar } from "@/components/workspace/ai-sidebar";
@@ -41,6 +42,10 @@ export default function HomePage() {
   const modelName = process.env.NEXT_PUBLIC_NVIDIA_MODEL ?? "meta/llama-3.1-405b-instruct";
 
   const isWorkspace = document !== null;
+
+  const scrollToSection = (sectionId: string) => {
+    globalThis.document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   useEffect(() => {
     return () => {
@@ -220,10 +225,8 @@ export default function HomePage() {
 
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-black text-white">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 bg-black [background-image:linear-gradient(rgba(24,24,27,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.2)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(circle_at_center,black,transparent_88%)]"
-      />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.05),transparent_26%)]" />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(24,24,27,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.16)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(circle_at_center,black,transparent_88%)]" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         <LayoutGroup id="draftr-shell">
@@ -233,7 +236,7 @@ export default function HomePage() {
                 key="workspace"
                 layoutId="draftr-shell"
                 transition={draftrSpring}
-                className="w-full max-w-[1500px] overflow-hidden border border-white/10 bg-zinc-950/90 shadow-shell backdrop-blur-2xl"
+                className="w-full max-w-[1600px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/90 shadow-shell backdrop-blur-2xl"
               >
                 <div className="flex min-h-[86vh] flex-col">
                   <div className="flex flex-col gap-5 border-b border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -310,27 +313,102 @@ export default function HomePage() {
                 key="hero"
                 layoutId="draftr-shell"
                 transition={draftrSpring}
-                className="w-full max-w-4xl overflow-hidden border border-white/10 bg-zinc-950/90 shadow-shell backdrop-blur-2xl"
+                className="w-full max-w-[1600px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/92 shadow-shell backdrop-blur-2xl"
               >
-                <div className="flex min-h-[78vh] flex-col">
-                  <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 sm:px-8">
-                    <div>
-                      <p className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Draftr</p>
-                      <p className="mt-2 text-sm text-zinc-400">Digital Zen for PDF and Markdown</p>
+                <div className="flex min-h-[88vh] flex-col">
+                  <div className="flex flex-col gap-4 border-b border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+                    <div className="flex items-center gap-3">
+                      <BrandMark size={44} />
+                      <div>
+                        <p className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Draftr</p>
+                        <p className="mt-2 text-sm text-zinc-400">Document architect for PDF and Markdown</p>
+                      </div>
                     </div>
-                    <p className="text-[0.65rem] uppercase tracking-[0.35em] text-zinc-600">Upload to continue</p>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">
+                        Private by default
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">
+                        AI-assisted drafts
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex flex-1 items-center justify-center px-4 py-6 sm:px-8 sm:py-10 lg:px-12">
-                    <div className="flex w-full max-w-5xl flex-col gap-10">
-                      <MagicUploadZone onFilesSelected={handleFilesSelected} isBusy={isConverting} />
-                      <ToolSuite
-                        currentDocument={document}
-                        onEditShortcut={() => {
-                          window.document.getElementById("magic-upload-zone")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }}
-                      />
+                  <div className="grid flex-1 gap-8 px-6 py-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:px-8 lg:py-10">
+                    <div className="flex flex-col justify-between gap-8">
+                      <div className="space-y-6">
+                        <div className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Document workbench</div>
+                        <h1 className="max-w-xl font-display text-5xl font-semibold tracking-[-0.06em] text-white sm:text-6xl lg:text-7xl">
+                          Convert, refine, and ship documents without leaving the draft.
+                        </h1>
+                        <div className="prose prose-invert prose-zinc max-w-none prose-p:my-0 prose-p:text-zinc-400 prose-li:my-2 prose-li:text-zinc-300">
+                          <p>
+                            Upload a PDF or Markdown file, inspect the conversion, and move between preview, edits, OCR,
+                            translation, compression, and AI rewrite tools in one calm interface.
+                          </p>
+                          <ul>
+                            <li>Client-side conversion keeps the first pass fast and private.</li>
+                            <li>Live revision history tracks manual edits and AI rewrites.</li>
+                            <li>Split, merge, fill, compress, and enhance files when the draft needs more work.</li>
+                          </ul>
+                        </div>
+
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            type="button"
+                            onClick={() => scrollToSection("magic-upload-zone")}
+                            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-black transition hover:bg-zinc-200"
+                          >
+                            Upload file
+                            <ArrowRight className="h-3.5 w-3.5 stroke-[1.8]" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => scrollToSection("tool-suite")}
+                            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                          >
+                            Browse tools
+                            <ArrowRight className="h-3.5 w-3.5 stroke-[1.8]" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-3">
+                        {[
+                          {
+                            label: "Client-side",
+                            value: "Conversion happens locally before AI requests are sent.",
+                          },
+                          {
+                            label: "Revisions",
+                            value: "Manual edits and AI rewrites stay in one history.",
+                          },
+                          {
+                            label: "Batch tools",
+                            value: "Split, merge, OCR, compress, and enhance assets.",
+                          },
+                        ].map((item) => (
+                          <div key={item.label} className="border border-white/10 bg-white/[0.03] p-4">
+                            <p className="text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">{item.label}</p>
+                            <p className="mt-3 text-sm leading-6 text-zinc-300">{item.value}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+
+                    <div className="flex h-full items-stretch">
+                      <MagicUploadZone onFilesSelected={handleFilesSelected} isBusy={isConverting} className="h-full" />
+                    </div>
+                  </div>
+
+                  <div className="border-t border-white/10 px-6 py-8 sm:px-8">
+                    <ToolSuite
+                      currentDocument={document}
+                      onEditShortcut={() => {
+                        scrollToSection("magic-upload-zone");
+                      }}
+                    />
                   </div>
 
                   {conversionError ? (

@@ -37,6 +37,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["var(--font-space-grotesk)", "var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       transitionTimingFunction: {
         draftr: "cubic-bezier(0.16, 1, 0.3, 1)",

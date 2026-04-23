@@ -104,9 +104,9 @@ function bytesToBlobPart(bytes: Uint8Array): BlobPart {
 function cardAccentClasses(accent: FileToolCard["accent"]) {
   switch (accent) {
     case "strong":
-      return "border-white/20 bg-white/[0.06] text-white";
+      return "border-white/20 bg-white/[0.08] text-white";
     case "soft":
-      return "border-white/10 bg-white/[0.03] text-zinc-200";
+      return "border-white/10 bg-white/[0.04] text-zinc-200";
     default:
       return "border-white/10 bg-black/25 text-zinc-200";
   }
@@ -373,16 +373,42 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
   }, [activeTool, selectedFiles]);
 
   return (
-    <section className="mt-10 space-y-6">
-      <div className="grid gap-8 lg:grid-cols-2">
+    <section id="tool-suite" aria-labelledby="tool-suite-heading" className="space-y-6">
+      <div className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Tool board</p>
+          <h2 id="tool-suite-heading" className="mt-3 font-display text-2xl font-semibold tracking-[-0.05em] text-white sm:text-3xl">
+            Workflow tools
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">
+            The suite stays readable on large and small screens, with each tool opening in a focused sheet when needed.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onEditShortcut}
+          className="inline-flex items-center gap-2 self-start border border-white/10 bg-white/[0.03] px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+        >
+          <Upload className="h-3.5 w-3.5 stroke-[1.25]" />
+          Jump to upload
+        </button>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
         {FILE_TOOL_GROUPS.map((group) => (
-          <div key={group.title} className="border border-white/10 bg-white/[0.02] p-5 sm:p-6">
-            <div className="mb-6">
-              <p className="text-2xl font-semibold tracking-[-0.04em] text-white sm:text-3xl">{group.title}</p>
-              <p className="mt-2 text-sm leading-6 text-zinc-500">{group.description}</p>
+          <article key={group.title} className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-5 shadow-shell sm:p-6">
+            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
+              <div>
+                <p className="font-display text-xl font-semibold tracking-[-0.04em] text-white sm:text-2xl">{group.title}</p>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">{group.description}</p>
+              </div>
+              <span className="shrink-0 rounded-full border border-white/10 px-3 py-2 text-[0.62rem] uppercase tracking-[0.24em] text-zinc-500">
+                {group.items.length} tools
+              </span>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
               {group.items.map((card) => {
                 const Icon = getToolIcon(card.key);
 
@@ -392,27 +418,33 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
                     type="button"
                     onClick={() => handleOpenTool(card.key)}
                     className={cn(
-                      "group flex items-start gap-4 border p-4 text-left transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06]",
+                      "group flex min-h-[210px] flex-col justify-between rounded-[1.25rem] border p-5 text-left transition hover:-translate-y-0.5 hover:border-white/20 hover:bg-white/[0.06] focus-visible:ring-1 focus-visible:ring-white/40",
                       cardAccentClasses(card.accent),
                     )}
                   >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 bg-black/30 text-white transition group-hover:border-white/20 group-hover:bg-white/[0.08]">
-                      <Icon className="h-5 w-5 stroke-[1.8]" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-base font-medium tracking-[-0.02em] text-white">{card.label}</span>
-                        <span className="rounded-full border border-white/10 px-2 py-1 text-[0.6rem] uppercase tracking-[0.22em] text-zinc-500">
-                          {card.category}
-                        </span>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-white/10 bg-black/25 text-white transition group-hover:border-white/20 group-hover:bg-white/[0.08]">
+                        <Icon className="h-5 w-5 stroke-[1.8]" />
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-zinc-400">{card.description}</p>
+                      <span className="rounded-full border border-white/10 px-2.5 py-1 text-[0.6rem] uppercase tracking-[0.22em] text-zinc-500">
+                        {card.category}
+                      </span>
+                    </div>
+
+                    <div className="mt-6">
+                      <span className="block text-lg font-medium tracking-[-0.03em] text-white">{card.label}</span>
+                      <p className="mt-3 text-sm leading-6 text-zinc-400">{card.description}</p>
+                    </div>
+
+                    <div className="mt-5 flex items-center gap-2 text-[0.62rem] uppercase tracking-[0.26em] text-zinc-500">
+                      <span className="h-px flex-1 bg-white/10" />
+                      <span>Open sheet</span>
                     </div>
                   </button>
                 );
               })}
             </div>
-          </div>
+          </article>
         ))}
       </div>
 

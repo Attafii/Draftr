@@ -9,6 +9,9 @@ import {
 } from "@/lib/document";
 
 export const runtime = "nodejs";
+export const maxDuration = 10;
+
+const NVIDIA_REQUEST_TIMEOUT_MS = 8000;
 
 const DEFAULT_MODEL = process.env.NVIDIA_MODEL ?? "meta/llama-3.1-405b-instruct";
 const NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions";
@@ -88,38 +91,61 @@ export async function POST(request: Request) {
       return NextResponse.json(fallbackInsight);
     }
 
-    const response = await fetch(NVIDIA_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: DEFAULT_MODEL,
-        temperature: mode === "rewrite" ? 0.25 : 0.2,
-        max_tokens: mode === "rewrite" ? 1200 : 800,
-        messages: [
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), NVIDIA_REQUEST_TIMEOUT_MS);
+
+    let response: Response;
+
+    try {
+      response = await fetch(NVIDIA_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: DEFAULT_MODEL,
+          temperature: mode === "rewrite" ? 0.25 : 0.2,
+          max_tokens: mode === "rewrite" ? 1200 : 800,
+          messages: [
+            {
+              role: "system",
+              content: [
+                "You are Draftr's document intelligence engine.",
+                "Return strict JSON only and never wrap the response in markdown.",
+                "If the user requests a rewrite, improve structure and clarity while preserving meaning.",
+              ].join(" "),
+            },
+            {
+              role: "user",
+              content: buildPrompt({
+                fileName: body.fileName,
+                kind: body.kind,
+                text: body.text,
+                mode,
+                instruction: body.instruction,
+              }),
+            },
+          ],
+        }),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return NextResponse.json(
           {
-            role: "system",
-            content: [
-              "You are Draftr's document intelligence engine.",
-              "Return strict JSON only and never wrap the response in markdown.",
-              "If the user requests a rewrite, improve structure and clarity while preserving meaning.",
-            ].join(" "),
+            ...fallbackInsight,
+            usedFallback: true,
+            error: `NVIDIA request timed out after ${NVIDIA_REQUEST_TIMEOUT_MS / 1000} seconds.`,
           },
-          {
-            role: "user",
-            content: buildPrompt({
-              fileName: body.fileName,
-              kind: body.kind,
-              text: body.text,
-              mode,
-              instruction: body.instruction,
-            }),
-          },
-        ],
-      }),
-    });
+          { status: 200 },
+        );
+      }
+
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       return NextResponse.json(
