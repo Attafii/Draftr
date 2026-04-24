@@ -110,7 +110,7 @@ export function MagicUploadZone({ onFilesSelected, className, isBusy = false }: 
   };
 
   return (
-    <div id="magic-upload-zone" className={cn("relative flex h-full w-full p-px", className)}>
+    <div id="magic-upload-zone" data-testid="magic-upload-zone" className={cn("relative flex h-full w-full p-px", className)}>
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[conic-gradient(from_180deg_at_50%_50%,rgba(255,255,255,0)_0deg,rgba(255,255,255,0.12)_50deg,rgba(255,255,255,0)_120deg,rgba(255,255,255,0.28)_210deg,rgba(255,255,255,0)_290deg,rgba(255,255,255,0.12)_360deg)] opacity-0 blur-[1px]"
@@ -185,6 +185,7 @@ export function MagicUploadZone({ onFilesSelected, className, isBusy = false }: 
       <input
         ref={inputRef}
         id={inputId}
+        data-testid="magic-upload-input"
         className="sr-only"
         type="file"
         accept=".pdf,.md,.markdown,application/pdf,text/markdown,text/x-markdown,application/x-markdown"

@@ -373,7 +373,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
   }, [activeTool, selectedFiles]);
 
   return (
-    <section id="tool-suite" aria-labelledby="tool-suite-heading" className="space-y-6">
+    <section id="tool-suite" data-testid="tool-suite" aria-labelledby="tool-suite-heading" className="space-y-6">
       <div className="flex flex-col gap-4 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Tool board</p>
@@ -496,6 +496,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
                 <input
                   ref={fileInputRef}
                   type="file"
+                  data-testid="tool-suite-file-input"
                   accept={uploadAccept}
                   multiple={allowMultiple}
                   className="sr-only"

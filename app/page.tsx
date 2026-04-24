@@ -244,7 +244,7 @@ export default function HomePage() {
                       <p className="text-[0.65rem] uppercase tracking-[0.45em] text-zinc-500">Conversion workspace</p>
                       <div className="mt-3 flex items-center gap-3 text-sm text-zinc-400">
                         <FileText className="h-4 w-4 stroke-[1.25]" />
-                        <span>{document.fileName}</span>
+                        <span data-testid="workspace-header-file-name">{document.fileName}</span>
                       </div>
                     </div>
 

@@ -122,7 +122,7 @@ export function AISidebar({
               <Sparkles className="h-4 w-4 stroke-[1.25] text-white" />
             </motion.div>
             <div>
-              <SheetTitle>AI Insight</SheetTitle>
+              <SheetTitle data-testid="ai-sidebar-title">AI Insight</SheetTitle>
               <SheetDescription className="mt-1 text-zinc-500">
                 Powered by {modelName}
               </SheetDescription>
@@ -146,6 +146,7 @@ export function AISidebar({
                 <span>Edit request</span>
               </div>
               <textarea
+                data-testid="ai-request-textarea"
                 value={requestText}
                 onChange={(event) => onRequestTextChange(event.target.value)}
                 placeholder="Fix structure, improve clarity, and enhance the file."

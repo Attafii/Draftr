@@ -324,9 +324,91 @@ function PdfPageSurface({
     <div className="relative mx-auto w-full max-w-3xl">
       <div
         ref={containerRef}
+        data-testid="pdf-page-surface"
         onMouseUp={handleMouseUp}
         className="relative overflow-hidden border border-white/10 bg-white shadow-[0_20px_80px_rgba(0,0,0,0.35)]"
       />
+
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        {pageAnnotations.map((annotation) =>
+          annotation.rects.map((rect, index) => (
+            <div
+              key={`${annotation.id}-${index}`}
+              className={cn(
+                "absolute",
+                annotation.kind === "highlight" && "bg-amber-300/25 ring-1 ring-amber-200/20",
+                annotation.kind === "underline" && "border-b-2 border-cyan-200/70",
+                annotation.kind === "note" && "bg-fuchsia-300/12 ring-1 ring-fuchsia-200/20",
+              )}
+              style={{
+                left: `${rect.left}%`,
+                top: `${rect.top}%`,
+                width: `${rect.width}%`,
+                height: `${rect.height}%`,
+              }}
+            />
+          )),
+        )}
+      </div>
+
+      {selectionText ? (
+        <div className="mt-3 border border-white/10 bg-black/50 p-3 text-xs leading-5 text-zinc-400">
+          Selected text: <span className="text-zinc-200">{selectionText}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function PdfTextSurface({
+  pageNumber,
+  text,
+  annotations,
+  onSelection,
+  onSelectionClear,
+}: {
+  pageNumber: number;
+  text: string;
+  annotations: PdfAnnotation[];
+  onSelection: (selection: PdfSelection) => void;
+  onSelectionClear: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [selectionText, setSelectionText] = useState("");
+
+  useEffect(() => {
+    setSelectionText("");
+  }, [pageNumber, text]);
+
+  const handleMouseUp = () => {
+    if (!containerRef.current) {
+      return;
+    }
+
+    const selection = buildSelection(pageNumber, containerRef.current);
+
+    if (!selection) {
+      setSelectionText("");
+      onSelectionClear();
+      return;
+    }
+
+    setSelectionText(selection.text);
+    onSelection(selection);
+  };
+
+  const pageAnnotations = useMemo(() => annotations.filter((annotation) => annotation.pageNumber === pageNumber), [annotations, pageNumber]);
+
+  return (
+    <div className="relative mx-auto w-full max-w-3xl">
+      <div
+        ref={containerRef}
+        data-testid="pdf-page-surface"
+        onMouseUp={handleMouseUp}
+        className="relative overflow-hidden border border-white/10 bg-white shadow-[0_20px_80px_rgba(0,0,0,0.35)]"
+      >
+        <pre className="whitespace-pre-wrap p-8 font-sans text-[0.96rem] leading-7 text-zinc-900">{text}</pre>
+      </div>
 
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         {pageAnnotations.map((annotation) =>
@@ -483,9 +565,9 @@ export function PdfEditorPanel({ document, fileUrl, editorText, onEditorTextChan
         <div>
           <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">
             <FileText className="h-4 w-4 stroke-[1.25]" />
-            <span>{headerText}</span>
+            <span data-testid="pdf-editor-title">{headerText}</span>
           </div>
-          <p className="mt-2 text-sm font-medium text-white">{document.fileName}</p>
+          <p className="mt-2 text-sm font-medium text-white" data-testid="pdf-editor-file-name">{document.fileName}</p>
           <p className="mt-2 text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
             {document.kind === "pdf"
               ? "Edit the extracted text, annotate pages, and export a revised PDF"
@@ -569,42 +651,67 @@ export function PdfEditorPanel({ document, fileUrl, editorText, onEditorTextChan
               Loading the native PDF viewer...
             </div>
           ) : viewerMode === "pages" ? (
-            <div className="grid min-h-0 flex-1 grid-cols-[92px_minmax(0,1fr)] gap-4">
-              <aside className="min-h-0 space-y-3 overflow-y-auto pr-1">
-                {pageNumbers.map((pageNumber) => (
-                  <PdfThumbnailItem
-                    key={pageNumber}
-                    pdfDocument={pdfDocument as PdfDocumentProxy}
-                    pageNumber={pageNumber}
-                    isActive={pageNumber === activePage}
-                    onSelect={(selectedPage) => {
-                      setActivePage(selectedPage);
-                      setSelection(null);
-                    }}
-                  />
-                ))}
-              </aside>
+            viewerError ? (
+              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto rounded-sm border border-white/10 bg-zinc-900/40 p-4">
+                <div className="rounded-none border border-red-500/20 bg-red-500/5 p-4 text-sm leading-6 text-red-200">
+                  {viewerError}
+                </div>
 
-              <div className="min-h-0 overflow-y-auto rounded-sm border border-white/10 bg-zinc-900/40 p-4">
-                <PdfPageSurface
-                  pdfDocument={pdfDocument as PdfDocumentProxy}
-                  pageNumber={activePage}
-                  scale={scale}
+                <PdfTextSurface
+                  pageNumber={1}
+                  text={editorText}
                   annotations={annotations}
                   onSelection={(nextSelection) => setSelection(nextSelection)}
                   onSelectionClear={() => setSelection(null)}
                 />
 
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
                   <div className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
-                    Page {activePage} of {pdfDocument?.numPages ?? 0}
+                    Page 1 of 1
                   </div>
                   <div className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
                     {currentAnnotationCount} annotation{currentAnnotationCount === 1 ? "" : "s"}
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="grid min-h-0 flex-1 grid-cols-[92px_minmax(0,1fr)] gap-4">
+                <aside className="min-h-0 space-y-3 overflow-y-auto pr-1">
+                  {pageNumbers.map((pageNumber) => (
+                    <PdfThumbnailItem
+                      key={pageNumber}
+                      pdfDocument={pdfDocument as PdfDocumentProxy}
+                      pageNumber={pageNumber}
+                      isActive={pageNumber === activePage}
+                      onSelect={(selectedPage) => {
+                        setActivePage(selectedPage);
+                        setSelection(null);
+                      }}
+                    />
+                  ))}
+                </aside>
+
+                <div className="min-h-0 overflow-y-auto rounded-sm border border-white/10 bg-zinc-900/40 p-4">
+                  <PdfPageSurface
+                    pdfDocument={pdfDocument as PdfDocumentProxy}
+                    pageNumber={activePage}
+                    scale={scale}
+                    annotations={annotations}
+                    onSelection={(nextSelection) => setSelection(nextSelection)}
+                    onSelectionClear={() => setSelection(null)}
+                  />
+
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+                    <div className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
+                      Page {activePage} of {pdfDocument?.numPages ?? 0}
+                    </div>
+                    <div className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">
+                      {currentAnnotationCount} annotation{currentAnnotationCount === 1 ? "" : "s"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
           ) : (
             <div className="min-h-0 flex-1 border border-white/10 bg-black/35 p-4">
               <div className="space-y-4">
@@ -721,7 +828,7 @@ export function PdfEditorPanel({ document, fileUrl, editorText, onEditorTextChan
               </div>
 
               {annotations.length > 0 ? (
-                <div className="border-t border-white/10 pt-4">
+                <div data-testid="pdf-annotation-history" className="border-t border-white/10 pt-4">
                   <p className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">Annotation history</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {annotations.map((annotation) => (

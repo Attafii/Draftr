@@ -12,6 +12,10 @@ export interface ImageExportOptions {
   mimeType?: "image/jpeg" | "image/webp";
 }
 
+interface DraftrE2EHooks {
+  ocrText?: string;
+}
+
 function createObjectUrlImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const objectUrl = URL.createObjectURL(file);
@@ -142,7 +146,20 @@ async function ocrCanvas(canvas: HTMLCanvasElement, language = "eng"): Promise<s
   return normalizeOcrText(result.data.text ?? "");
 }
 
+function getE2eOcrText(): string | null {
+  const hooks = globalThis as typeof globalThis & { __DRAFTR_E2E__?: DraftrE2EHooks };
+  const overrideText = normalizeOcrText(hooks.__DRAFTR_E2E__?.ocrText ?? "");
+
+  return overrideText.length > 0 ? overrideText : null;
+}
+
 export async function ocrImageFile(file: File, language = "eng"): Promise<string> {
+  const overrideText = getE2eOcrText();
+
+  if (overrideText) {
+    return overrideText;
+  }
+
   return ocrCanvas(await renderImageToCanvas(file, { maxDimension: 2200 }), language);
 }
 
@@ -164,6 +181,12 @@ async function renderPdfPageToCanvas(page: PDFPageProxy, scale: number): Promise
 }
 
 export async function ocrPdfFile(file: File, language = "eng"): Promise<string> {
+  const overrideText = getE2eOcrText();
+
+  if (overrideText) {
+    return overrideText;
+  }
+
   const { getDocument } = await import("pdfjs-dist");
   const loadingTask = getDocument(new Uint8Array(await file.arrayBuffer()));
   const pdfDocument = await loadingTask.promise;
