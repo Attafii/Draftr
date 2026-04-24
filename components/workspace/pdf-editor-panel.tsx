@@ -165,37 +165,43 @@ function PdfThumbnailItem({
         return;
       }
 
-      const viewerModule = (await import("pdfjs-dist/web/pdf_viewer.mjs")) as unknown as PdfViewerModule;
-      const { PDFRenderingQueue, PDFThumbnailView, EventBus, SimpleLinkService } = viewerModule;
+      try {
+        const viewerModule = (await import("pdfjs-dist/web/pdf_viewer.mjs")) as unknown as PdfViewerModule;
+        const { PDFRenderingQueue, PDFThumbnailView, EventBus, SimpleLinkService } = viewerModule;
 
-      if (cancelled || !containerRef.current) {
-        return;
-      }
+        if (cancelled || !containerRef.current) {
+          return;
+        }
 
-      containerRef.current.replaceChildren();
-      const page = await pdfDocument.getPage(pageNumber);
-      const defaultViewport = page.getViewport({ scale: 0.18 });
-      const eventBus = new EventBus();
-      const renderingQueue = new PDFRenderingQueue();
-      const linkService = new SimpleLinkService({ eventBus });
-      const thumbnailView = new PDFThumbnailView({
-        container: containerRef.current,
-        eventBus,
-        id: pageNumber,
-        defaultViewport,
-        linkService,
-        renderingQueue,
-      });
+        containerRef.current.replaceChildren();
+        const page = await pdfDocument.getPage(pageNumber);
+        const defaultViewport = page.getViewport({ scale: 0.18 });
+        const eventBus = new EventBus();
+        const renderingQueue = new PDFRenderingQueue();
+        const linkService = new SimpleLinkService({ eventBus });
+        const thumbnailView = new PDFThumbnailView({
+          container: containerRef.current,
+          eventBus,
+          id: pageNumber,
+          defaultViewport,
+          linkService,
+          renderingQueue,
+        });
 
-      renderingQueue.setThumbnailViewer(thumbnailView);
-      linkService.setDocument(pdfDocument);
-      thumbnailView.setPdfPage(page);
-      viewRef.current = thumbnailView;
+        renderingQueue.setThumbnailViewer(thumbnailView);
+        linkService.setDocument(pdfDocument);
+        thumbnailView.setPdfPage(page);
+        viewRef.current = thumbnailView;
 
-      await thumbnailView.draw();
+        await thumbnailView.draw();
 
-      if (cancelled) {
-        thumbnailView.destroy();
+        if (cancelled) {
+          thumbnailView.destroy();
+        }
+      } catch {
+        if (!cancelled && containerRef.current) {
+          containerRef.current.replaceChildren();
+        }
       }
     };
 
@@ -233,6 +239,7 @@ function PdfPageSurface({
   annotations,
   onSelection,
   onSelectionClear,
+  onViewerError,
 }: {
   pdfDocument: PdfDocumentProxy;
   pageNumber: number;
@@ -240,6 +247,7 @@ function PdfPageSurface({
   annotations: PdfAnnotation[];
   onSelection: (selection: PdfSelection) => void;
   onSelectionClear: () => void;
+  onViewerError: (message: string) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<PdfRenderableView | null>(null);
@@ -253,38 +261,44 @@ function PdfPageSurface({
         return;
       }
 
-      const viewerModule = (await import("pdfjs-dist/web/pdf_viewer.mjs")) as unknown as PdfViewerModule;
-      const { PDFPageView, PDFRenderingQueue, EventBus } = viewerModule;
+      try {
+        const viewerModule = (await import("pdfjs-dist/web/pdf_viewer.mjs")) as unknown as PdfViewerModule;
+        const { PDFPageView, PDFRenderingQueue, EventBus } = viewerModule;
 
-      if (cancelled || !containerRef.current) {
-        return;
-      }
+        if (cancelled || !containerRef.current) {
+          return;
+        }
 
-      containerRef.current.replaceChildren();
-      const page = await pdfDocument.getPage(pageNumber);
-      const defaultViewport = page.getViewport({ scale });
-      const eventBus = new EventBus();
-      const renderingQueue = new PDFRenderingQueue();
-      const pageView = new PDFPageView({
-        container: containerRef.current,
-        eventBus,
-        id: pageNumber,
-        scale,
-        defaultViewport,
-        renderingQueue,
-        textLayerMode: TEXT_LAYER_MODE_ENABLE,
-        annotationMode: ANNOTATION_MODE_ENABLE_FORMS,
-        imageResourcesPath: "",
-      });
+        containerRef.current.replaceChildren();
+        const page = await pdfDocument.getPage(pageNumber);
+        const defaultViewport = page.getViewport({ scale });
+        const eventBus = new EventBus();
+        const renderingQueue = new PDFRenderingQueue();
+        const pageView = new PDFPageView({
+          container: containerRef.current,
+          eventBus,
+          id: pageNumber,
+          scale,
+          defaultViewport,
+          renderingQueue,
+          textLayerMode: TEXT_LAYER_MODE_ENABLE,
+          annotationMode: ANNOTATION_MODE_ENABLE_FORMS,
+          imageResourcesPath: "",
+        });
 
-      renderingQueue.setViewer(pageView);
-      pageView.setPdfPage(page);
-      viewRef.current = pageView;
+        renderingQueue.setViewer(pageView);
+        pageView.setPdfPage(page);
+        viewRef.current = pageView;
 
-      await pageView.draw();
+        await pageView.draw();
 
-      if (cancelled) {
-        pageView.destroy();
+        if (cancelled) {
+          pageView.destroy();
+        }
+      } catch (error) {
+        if (!cancelled) {
+          onViewerError(error instanceof Error ? error.message : "Unable to load the PDF viewer.");
+        }
       }
     };
 
@@ -295,7 +309,7 @@ function PdfPageSurface({
       viewRef.current?.destroy?.();
       viewRef.current = null;
     };
-  }, [pageNumber, pdfDocument, scale]);
+  }, [onViewerError, pageNumber, pdfDocument, scale]);
 
   useEffect(() => {
     setSelectionText("");
@@ -699,6 +713,7 @@ export function PdfEditorPanel({ document, fileUrl, editorText, onEditorTextChan
                     annotations={annotations}
                     onSelection={(nextSelection) => setSelection(nextSelection)}
                     onSelectionClear={() => setSelection(null)}
+                    onViewerError={setViewerError}
                   />
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
