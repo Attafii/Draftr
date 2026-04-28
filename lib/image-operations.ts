@@ -78,6 +78,14 @@ async function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality
   });
 }
 
+async function tryCanvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: number): Promise<Blob | null> {
+  try {
+    return await canvasToBlob(canvas, mimeType, quality);
+  } catch {
+    return null;
+  }
+}
+
 async function renderImageToCanvas(file: File, options: ImageExportOptions): Promise<HTMLCanvasElement> {
   const image = await createObjectUrlImage(file);
   const maxDimension = options.maxDimension ?? 2400;
@@ -102,10 +110,25 @@ async function renderImageToCanvas(file: File, options: ImageExportOptions): Pro
 
 export async function compressImageFile(file: File, options: ImageExportOptions = {}): Promise<Blob> {
   const canvas = await renderImageToCanvas(file, options);
-  const mimeType = options.mimeType ?? "image/jpeg";
   const quality = options.quality ?? 0.82;
+  const fallbackQuality = Math.max(0.58, Number((quality - 0.12).toFixed(2)));
+  const preferredMimeType = options.mimeType ?? "image/webp";
+  const alternateMimeType = preferredMimeType === "image/webp" ? "image/jpeg" : "image/webp";
 
-  return canvasToBlob(canvas, mimeType, quality);
+  const candidates = await Promise.all([
+    tryCanvasToBlob(canvas, preferredMimeType, quality),
+    tryCanvasToBlob(canvas, alternateMimeType, quality),
+    tryCanvasToBlob(canvas, preferredMimeType, fallbackQuality),
+    tryCanvasToBlob(canvas, alternateMimeType, fallbackQuality),
+  ]);
+
+  const successfulCandidates = candidates.filter((blob): blob is Blob => blob !== null);
+
+  if (successfulCandidates.length === 0) {
+    throw new Error("Unable to create compressed image blob.");
+  }
+
+  return successfulCandidates.reduce((smallest, blob) => (blob.size < smallest.size ? blob : smallest));
 }
 
 export async function enhanceImageFile(file: File, options: ImageExportOptions = {}): Promise<Blob> {

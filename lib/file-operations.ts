@@ -29,9 +29,15 @@ function buildPageFileName(fileName: string, pageNumber: number): string {
 }
 
 export async function compressPdfFile(buffer: ArrayBuffer | Uint8Array): Promise<Uint8Array> {
-  const pdfDocument = await PDFDocument.load(toUint8Array(buffer));
+  const sourceDocument = await PDFDocument.load(toUint8Array(buffer));
+  const compactDocument = await PDFDocument.create();
+  const copiedPages = await compactDocument.copyPages(sourceDocument, sourceDocument.getPageIndices());
 
-  return pdfDocument.save({
+  copiedPages.forEach((page) => {
+    compactDocument.addPage(page);
+  });
+
+  return compactDocument.save({
     useObjectStreams: true,
     addDefaultPage: false,
   });

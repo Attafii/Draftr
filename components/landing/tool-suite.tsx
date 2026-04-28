@@ -6,7 +6,7 @@ import { FileText, Image as ImageIcon, Languages, Layers3, Minimize2, PenLine, S
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { downloadBlobFile, downloadMarkdownFile, downloadPdfFile } from "@/lib/download";
 import { compressPdfFile, fillPdfFile, mergePdfFiles, splitPdfFile, zipBinaryFiles } from "@/lib/file-operations";
-import { compressImageFile, enhanceImageFile, ocrImageFile, ocrPdfFile } from "@/lib/image-operations";
+import { buildImageOutputName, compressImageFile, enhanceImageFile, ocrImageFile, ocrPdfFile } from "@/lib/image-operations";
 import { FILE_TOOL_GROUPS, getToolCardByKey, type FileToolCard, type FileToolKey } from "@/lib/tool-catalog";
 import { buildAiRequestPayload } from "@/lib/workspace";
 import { convertDocument } from "@/lib/document-client";
@@ -193,12 +193,15 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
             throw new Error("Select a PDF file to compress.");
           }
 
-          const compressedBytes = await compressPdfFile(await file.arrayBuffer());
+          const sourceBytes = await file.arrayBuffer();
+          const compressedBytes = await compressPdfFile(sourceBytes);
           downloadBlobFile(
             buildExportFileName(file.name.replace(/\.pdf$/i, ""), "pdf"),
             new Blob([bytesToBlobPart(compressedBytes)], { type: "application/pdf" }),
           );
-          setStatusMessage(`Compressed ${file.name} and prepared a smaller PDF download.`);
+          setStatusMessage(
+            `Compressed ${file.name} from ${formatFileSize(sourceBytes.byteLength)} to ${formatFileSize(compressedBytes.byteLength)}.`,
+          );
           break;
         }
         case "merge-pdf": {
@@ -321,16 +324,24 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
             throw new Error("Select one or more image files to compress.");
           }
 
+          const sourceBytes = selectedFiles.reduce((total, file) => total + file.size, 0);
+
           const archiveFiles = await Promise.all(
-            selectedFiles.map(async (file) => ({
-              fileName: `${stripFileExtension(file.name)}-compressed.jpg`,
-              bytes: new Uint8Array(await (await compressImageFile(file, { quality: imageQuality, maxDimension: imageMaxDimension })).arrayBuffer()),
-            })),
+            selectedFiles.map(async (file) => {
+              const compressedBlob = await compressImageFile(file, { quality: imageQuality, maxDimension: imageMaxDimension });
+
+              return {
+                fileName: buildImageOutputName(file.name, "compressed", compressedBlob.type === "image/webp" ? "webp" : "jpg"),
+                bytes: new Uint8Array(await compressedBlob.arrayBuffer()),
+              };
+            }),
           );
 
           const zipBytes = await zipBinaryFiles(archiveFiles);
           downloadBlobFile("compressed-images.zip", new Blob([bytesToBlobPart(zipBytes)], { type: "application/zip" }));
-          setStatusMessage(`Compressed ${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"}.`);
+          setStatusMessage(
+            `Compressed ${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} from ${formatFileSize(sourceBytes)} to ${formatFileSize(zipBytes.byteLength)}.`,
+          );
           break;
         }
         case "enhance-image": {
@@ -338,16 +349,24 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
             throw new Error("Select one or more image files to enhance.");
           }
 
+          const sourceBytes = selectedFiles.reduce((total, file) => total + file.size, 0);
+
           const archiveFiles = await Promise.all(
-            selectedFiles.map(async (file) => ({
-              fileName: `${stripFileExtension(file.name)}-enhanced.jpg`,
-              bytes: new Uint8Array(await (await enhanceImageFile(file, { quality: imageQuality, maxDimension: imageMaxDimension })).arrayBuffer()),
-            })),
+            selectedFiles.map(async (file) => {
+              const enhancedBlob = await enhanceImageFile(file, { quality: imageQuality, maxDimension: imageMaxDimension });
+
+              return {
+                fileName: buildImageOutputName(file.name, "enhanced", "jpg"),
+                bytes: new Uint8Array(await enhancedBlob.arrayBuffer()),
+              };
+            }),
           );
 
           const zipBytes = await zipBinaryFiles(archiveFiles);
           downloadBlobFile("enhanced-images.zip", new Blob([bytesToBlobPart(zipBytes)], { type: "application/zip" }));
-          setStatusMessage(`Enhanced ${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"}.`);
+          setStatusMessage(
+            `Enhanced ${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} from ${formatFileSize(sourceBytes)} to ${formatFileSize(zipBytes.byteLength)}.`,
+          );
           break;
         }
         default:

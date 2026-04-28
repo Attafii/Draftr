@@ -3,8 +3,18 @@ import { describe, expect, it } from "vitest";
 
 import { compressPdfFile, fillPdfFile, mergePdfFiles, splitPdfFile } from "@/lib/file-operations";
 
-async function createSamplePdf(pageCount: number): Promise<Uint8Array> {
+async function createSamplePdf(pageCount: number, withMetadata = false): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
+
+  if (withMetadata) {
+    pdf.setTitle("Sample export");
+    pdf.setAuthor("Draftr");
+    pdf.setSubject("Compression regression test");
+    pdf.setCreator("Draftr test suite");
+    pdf.setProducer("pdf-lib");
+    pdf.setKeywords(["compression", "pdf", "draftr"]);
+  }
+
 
   for (let index = 0; index < pageCount; index += 1) {
     const page = pdf.addPage([420, 595]);
@@ -44,11 +54,12 @@ describe("file operations", () => {
   });
 
   it("compresses a PDF without changing its page count", async () => {
-    const sourceBytes = await createSamplePdf(2);
+    const sourceBytes = await createSamplePdf(2, true);
     const compressedBytes = await compressPdfFile(sourceBytes);
     const compressedDocument = await PDFDocument.load(compressedBytes);
 
     expect(compressedDocument.getPageCount()).toBe(2);
+    expect(compressedBytes.length).toBeLessThan(sourceBytes.length);
   });
 
   it("fills a PDF with overlay text", async () => {

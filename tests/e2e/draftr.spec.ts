@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { readFile } from "node:fs/promises";
+import JSZip from "jszip";
 
 async function createMarkdownBuffer() {
   return Buffer.from("# Draft Title\n\n\nFirst   paragraph.\n\nSecond line.\n", "utf8");
@@ -31,6 +32,46 @@ function createSvgBuffer() {
 </svg>`,
     "utf8",
   );
+}
+
+async function createPngBuffer(page: Parameters<typeof test>[0]["page"]) {
+  const base64 = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 800;
+
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas context unavailable.");
+    }
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+
+    gradient.addColorStop(0, "#111827");
+    gradient.addColorStop(0.45, "#2563eb");
+    gradient.addColorStop(1, "#f97316");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let row = 0; row < 40; row += 1) {
+      for (let column = 0; column < 60; column += 1) {
+        const hue = (row * 19 + column * 11) % 360;
+        context.fillStyle = `hsl(${hue} 84% 56%)`;
+        context.fillRect(column * 20, row * 20, 20, 20);
+      }
+    }
+
+    context.fillStyle = "rgba(255, 255, 255, 0.92)";
+    context.font = "bold 72px Arial";
+    context.fillText("Image compression test", 80, 150);
+    context.font = "36px Arial";
+    context.fillText("Draftr should shrink this file.", 80, 220);
+
+    return canvas.toDataURL("image/png").split(",")[1];
+  });
+
+  return Buffer.from(base64, "base64");
 }
 
 async function uploadFile(page: Parameters<typeof test>[0]["page"], selector: string, fileName: string, mimeType: string, buffer: Buffer) {
@@ -146,6 +187,43 @@ test("runs OCR on an image through the tool suite", async ({ page }) => {
   expect(recognizedText).toContain("OCR browser test");
   expect(recognizedText).toContain("recognized text");
   await expect(page.getByText("OCR extracted text from ocr-browser-test.svg.")).toBeVisible();
+});
+
+test("compresses images into a smaller archive", async ({ page }) => {
+  await page.goto("/");
+
+  const sourceBytes = await createPngBuffer(page);
+
+  await page.getByRole("button", { name: "Browse tools" }).click();
+  await page.getByRole("button", { name: "Compress Images" }).click();
+
+  await uploadFile(
+    page,
+    '[data-testid="tool-suite-file-input"]',
+    "poster.png",
+    "image/png",
+    sourceBytes,
+  );
+
+  const download = await waitForDownload(page, () => page.getByRole("button", { name: "Run tool" }).click());
+  expect(download.suggestedFilename()).toBe("compressed-images.zip");
+
+  const downloadPath = await download.path();
+
+  if (!downloadPath) {
+    throw new Error("Expected a download path for the compressed image archive.");
+  }
+
+  const zipBytes = await readFile(downloadPath);
+  const archive = await JSZip.loadAsync(zipBytes);
+  const entries = Object.values(archive.files).filter((entry) => !entry.dir);
+
+  expect(entries).toHaveLength(1);
+
+  const compressedBytes = await entries[0].async("uint8array");
+
+  expect(compressedBytes.length).toBeLessThan(sourceBytes.length);
+  await expect(page.getByText("Compressed 1 image")).toBeVisible();
 });
 
 test("allows PDF annotations on the rendered page", async ({ page }) => {
