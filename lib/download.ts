@@ -1,6 +1,6 @@
 "use client";
 
-import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 
 import { buildExportFileName, normalizeMarkdownExport, stripFileExtension, type ExportStyleOptions } from "@/lib/document";
 
@@ -237,7 +237,6 @@ function parseInlineRuns(text: string, fonts: { normal: PDFFont; bold: PDFFont; 
 
   let remaining = text;
 
-  const colorOpenRe = /^<color=#[0-9a-fA-F]{6}>/;
   while (remaining.length > 0) {
     // Bold
     const boldMatch = remaining.match(/^\*\*(.+?)\*\*/s);
@@ -287,7 +286,7 @@ function parseInlineRuns(text: string, fonts: { normal: PDFFont; bold: PDFFont; 
   return runs;
 }
 
-function drawStyledLine(page: any, x: number, y: number, lineText: string, fonts: { normal: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont }, defaultSize: number, defaultColor = "#000000") {
+function drawStyledLine(page: PDFPage, x: number, y: number, lineText: string, fonts: { normal: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont }, defaultSize: number, defaultColor = "#000000") {
   const runs = parseInlineRuns(lineText, fonts, defaultSize);
   let cursorX = x;
 
