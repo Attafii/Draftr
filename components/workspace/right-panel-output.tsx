@@ -29,19 +29,19 @@ export function RightPanelOutput({ document, editorText, isLoading = false, clas
       animate="visible"
       exit="exit"
       transition={draftrSpring}
-      className={cn("flex min-h-0 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 sm:p-8", className)}
+      className={cn("flex min-h-0 flex-col soft-card p-6 sm:p-8", className)}
     >
       <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">
         <Sparkles className="h-4 w-4 stroke-[1.25]" />
         <span>Right panel output</span>
       </div>
 
-      <div className="mt-8 flex min-h-0 flex-1 flex-col border border-white/10 bg-white/[0.02] p-5 sm:p-6">
+      <div className="mt-8 flex min-h-0 flex-1 flex-col soft-card p-5 sm:p-6">
         {document ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
-                <p className="text-sm font-medium text-white">Rendered output</p>
+                <p className="text-sm font-medium text-zinc-900">Rendered output</p>
                 <p className="mt-2 text-[0.65rem] uppercase tracking-[0.32em] text-zinc-500">
                   {document.kind === "pdf"
                     ? "Live PDF text preview"
@@ -55,7 +55,7 @@ export function RightPanelOutput({ document, editorText, isLoading = false, clas
 
             <div className="mt-5 min-h-0 flex-1 overflow-auto pr-1">
               {document.kind === "markdown" ? (
-                <div className="prose prose-invert prose-zinc max-w-none prose-headings:tracking-[-0.04em] prose-h1:text-3xl prose-h2:text-2xl prose-p:text-zinc-300 prose-a:text-white prose-strong:text-white prose-code:rounded-none prose-code:bg-white/[0.04] prose-code:px-1 prose-code:py-0.5 prose-pre:rounded-none prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/60">
+                <div className="prose max-w-none prose-headings:tracking-[-0.04em] prose-h1:text-3xl prose-h2:text-2xl prose-p:text-zinc-700 prose-a:text-[hsl(var(--primary))] prose-strong:text-zinc-900 prose-code:rounded-none prose-code:bg-[hsl(var(--muted))] prose-code:px-1 prose-code:py-0.5 prose-pre:rounded-none prose-pre:border prose-pre:border-[hsl(var(--border))] prose-pre:bg-[hsl(var(--muted))]">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{previewText}</ReactMarkdown>
                 </div>
               ) : (

@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 import * as React from "react";
 
-export function HoverCard({ className = "", children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function HoverCard({ className = "", children, ...props }: HTMLMotionProps<"div">) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -17,7 +17,7 @@ export function HoverCard({ className = "", children, ...props }: React.HTMLAttr
   );
 }
 
-export function HoverButton({ className = "", children, ...props }: React.ComponentPropsWithoutRef<"button">) {
+export function HoverButton({ className = "", children, ...props }: HTMLMotionProps<"button">) {
   return (
     <motion.button whileTap={{ scale: 0.985 }} transition={{ duration: 0.12 }} className={className} {...props}>
       {children}

@@ -22,7 +22,7 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
     <div className={cn("space-y-3 soft-card p-4", className)}>
       <div className="flex items-center gap-3">
         <div className="flex h-8 w-8 items-center justify-center soft-card">
-          <Search className="h-4 w-4 stroke-[1.25] text-white" />
+          <Search className="h-4 w-4 stroke-[1.25] text-[hsl(var(--primary))]" />
         </div>
         <div>
           <p className="text-[0.65rem] uppercase tracking-[0.3em] text-zinc-500">Search and headings</p>
@@ -36,7 +36,7 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Search the document"
-          className="w-full border border-white/10 bg-black/50 px-3 py-2 text-sm text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/20"
+          className="w-full border bg-[hsl(var(--input))] px-3 py-2 text-sm text-zinc-700 outline-none transition placeholder:text-zinc-500 focus:border-[hsl(var(--ring))]"
         />
       </label>
 
@@ -48,11 +48,11 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
           </div>
           <div className="flex flex-wrap gap-2">
             {searchHits.slice(0, 8).map((hit) => (
-              <button
+                <button
                 key={hit.id}
                 type="button"
                 onClick={() => onJumpToLine(hit.lineNumber)}
-                className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-left text-[0.63rem] uppercase tracking-[0.24em] text-zinc-400 transition hover:text-white"
+                className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-left text-[0.63rem] uppercase tracking-[0.24em] text-zinc-600 transition hover:text-white"
               >
                 <span>Line {hit.lineNumber}</span>
                 <ArrowRight className="h-3 w-3 stroke-[1.25]" />
@@ -62,7 +62,7 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
           </div>
         </div>
       ) : searchQuery.trim().length > 0 ? (
-        <div className="border border-dashed border-white/10 bg-black/25 p-3 text-sm text-zinc-500">No matches found.</div>
+        <div className="border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--muted))] p-3 text-sm text-zinc-600">No matches found.</div>
       ) : null}
 
       {headings.length > 0 ? (
@@ -80,8 +80,8 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
                 className={cn(
                   "inline-flex items-center gap-2 border px-3 py-2 text-left text-[0.63rem] uppercase tracking-[0.24em] transition",
                   heading.level === 1
-                    ? "border-white/20 bg-white text-black"
-                    : "border-white/10 bg-black/30 text-zinc-400 hover:border-white/20 hover:bg-white/[0.06] hover:text-white",
+                    ? "btn-accent text-white"
+                    : "border btn-ghost text-zinc-600 hover:bg-[hsl(var(--muted))]",
                 )}
               >
                 <span>H{heading.level}</span>
