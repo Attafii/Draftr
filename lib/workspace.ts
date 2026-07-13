@@ -1,7 +1,7 @@
 import { type AiMode, type AiRequestPayload, type ConvertedDocument } from "@/lib/document";
 
 export function resolveWorkingText(document: ConvertedDocument | null, editorText: string): string {
-  if (editorText.trim().length > 0) {
+  if (typeof editorText === "string") {
     return editorText;
   }
 

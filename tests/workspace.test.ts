@@ -16,7 +16,11 @@ const sampleDocument = {
 describe("workspace helpers", () => {
   it("prefers the active editor text over the original converted text", () => {
     expect(resolveWorkingText(sampleDocument, "Updated working copy")).toBe("Updated working copy");
-    expect(resolveWorkingText(sampleDocument, "")).toBe("Converted text from the latest upload");
+  });
+
+  it("preserves an intentionally cleared editor so exports can be blank", () => {
+    expect(resolveWorkingText(sampleDocument, "")).toBe("");
+    expect(resolveWorkingText(sampleDocument, "   ")).toBe("   ");
   });
 
   it("builds AI payloads from the active converted file", () => {

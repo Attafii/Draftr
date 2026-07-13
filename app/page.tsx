@@ -11,7 +11,7 @@ import { AISidebar } from "@/components/workspace/ai-sidebar";
 import { LeftPanelPreview } from "@/components/workspace/left-panel-preview";
 import { RightPanelOutput } from "@/components/workspace/right-panel-output";
 import { draftrSpring } from "@/lib/animation";
-import { type AiInsight, type AiMode, type ConvertedDocument } from "@/lib/document";
+import { type AiInsight, type AiMode, type ConvertedDocument, type ExportStylePreset } from "@/lib/document";
 import { convertDocument } from "@/lib/document-client";
 import { downloadMarkdownFile, downloadPdfFile } from "@/lib/download";
 import { canRedoRevision, canUndoRevision, createRevisionEntry, emptyRevisionHistory, getActiveRevision, revisionHistoryReducer } from "@/lib/revision-history";
@@ -36,6 +36,8 @@ export default function HomePage() {
   const [aiLoadingMode, setAiLoadingMode] = useState<AiMode | null>(null);
   const [aiRequest, setAiRequest] = useState("Fix structure, improve clarity, and enhance the file.");
   const [aiError, setAiError] = useState<string | null>(null);
+  const [exportPreset, setExportPreset] = useState<ExportStylePreset>("editorial");
+  const [exportStyleDetails, setExportStyleDetails] = useState({ fontFamily: "Helvetica", fontSize: 11 });
   const suppressHistoryCommitRef = useRef(false);
   const manualEditTimerRef = useRef<number | null>(null);
 
@@ -224,9 +226,9 @@ export default function HomePage() {
   };
 
   return (
-    <main className="relative isolate min-h-screen overflow-hidden bg-black text-white">
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.08),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.05),transparent_26%)]" />
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(24,24,27,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(24,24,27,0.16)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(circle_at_center,black,transparent_88%)]" />
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#05070b] text-white">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_32%),radial-gradient(circle_at_20%_20%,rgba(129,140,248,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(252,165,165,0.12),transparent_28%)]" />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:54px_54px] [mask-image:radial-gradient(circle_at_center,black,transparent_88%)]" />
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
         <LayoutGroup id="draftr-shell">
@@ -236,7 +238,7 @@ export default function HomePage() {
                 key="workspace"
                 layoutId="draftr-shell"
                 transition={draftrSpring}
-                className="w-full max-w-[1600px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/90 shadow-shell backdrop-blur-2xl"
+                className="w-full max-w-[1600px] overflow-hidden rounded-[2.2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(12,14,18,0.98),rgba(7,8,11,0.96))] shadow-[0_30px_100px_rgba(0,0,0,0.48)] backdrop-blur-2xl"
               >
                 <div className="flex min-h-[86vh] flex-col">
                   <div className="flex flex-col gap-5 border-b border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -257,22 +259,64 @@ export default function HomePage() {
                         <Download className="h-3.5 w-3.5 stroke-[1.25]" />
                         Clean PDF
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "print" })}
-                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
-                      >
-                        <Download className="h-3.5 w-3.5 stroke-[1.25]" />
-                        Print PDF
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => downloadMarkdownFile(document.fileName, resolveWorkingText(document, editorText), { preset: "normalized" })}
-                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
-                      >
-                        <Download className="h-3.5 w-3.5 stroke-[1.25]" />
-                        Normalized MD
-                      </button>
+                      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-2 py-2">
+                        {(["editorial", "minimal", "studio"] as ExportStylePreset[]).map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setExportPreset(preset)}
+                            className={`rounded-full px-3 py-1.5 text-[0.62rem] uppercase tracking-[0.24em] transition ${exportPreset === preset ? "bg-white text-black" : "text-zinc-400 hover:bg-white/[0.06] hover:text-white"}`}
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <label className="flex items-center gap-2 text-[0.65rem] text-zinc-400">
+                          <span className="uppercase tracking-[0.24em]">Font</span>
+                          <select
+                            value={exportStyleDetails.fontFamily}
+                            onChange={(e) => setExportStyleDetails((s) => ({ ...s, fontFamily: e.target.value }))}
+                            className="bg-black/30 border border-white/10 text-sm text-zinc-300 px-2 py-1"
+                          >
+                            <option value="Helvetica">Sans</option>
+                            <option value="Georgia">Serif</option>
+                            <option value="Courier New">Mono</option>
+                          </select>
+                        </label>
+
+                        <label className="flex items-center gap-2 text-[0.65rem] text-zinc-400">
+                          <span className="uppercase tracking-[0.24em]">Size</span>
+                          <select
+                            value={String(exportStyleDetails.fontSize)}
+                            onChange={(e) => setExportStyleDetails((s) => ({ ...s, fontSize: Number(e.target.value) }))}
+                            className="bg-black/30 border border-white/10 text-sm text-zinc-300 px-2 py-1"
+                          >
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                          </select>
+                        </label>
+
+                        
+                      </div>
+                        <button
+                          type="button"
+                          onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "print" }, { preset: exportPreset, title: document.fileName, fontFamily: exportStyleDetails.fontFamily, fontSize: exportStyleDetails.fontSize })}
+                          className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                        >
+                          <Download className="h-3.5 w-3.5 stroke-[1.25]" />
+                          Design PDF
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => downloadMarkdownFile(document.fileName, resolveWorkingText(document, editorText), { preset: "normalized" }, { preset: exportPreset, title: document.fileName, fontFamily: exportStyleDetails.fontFamily, fontSize: exportStyleDetails.fontSize })}
+                          className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                        >
+                          <Download className="h-3.5 w-3.5 stroke-[1.25]" />
+                          Styled MD
+                        </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -304,7 +348,7 @@ export default function HomePage() {
                       isLoading={isConverting}
                     />
                     <div aria-hidden="true" className="hidden w-[0.5px] bg-zinc-800 xl:block" />
-                    <RightPanelOutput document={document} editorText={editorText} isLoading={isConverting} />
+                    <RightPanelOutput document={document} editorText={editorText} isLoading={isConverting} exportStyle={{ preset: exportPreset, title: document.fileName }} />
                   </div>
                 </div>
               </motion.section>
@@ -313,7 +357,7 @@ export default function HomePage() {
                 key="hero"
                 layoutId="draftr-shell"
                 transition={draftrSpring}
-                className="w-full max-w-[1600px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-950/92 shadow-shell backdrop-blur-2xl"
+                className="w-full max-w-[1600px] overflow-hidden rounded-[2.2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(12,14,18,0.98),rgba(7,8,11,0.96))] shadow-[0_30px_100px_rgba(0,0,0,0.48)] backdrop-blur-2xl"
               >
                 <div className="flex min-h-[88vh] flex-col">
                   <div className="flex flex-col gap-4 border-b border-white/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -389,7 +433,7 @@ export default function HomePage() {
                             value: "Split, merge, OCR, compress, and enhance assets.",
                           },
                         ].map((item) => (
-                          <div key={item.label} className="border border-white/10 bg-white/[0.03] p-4">
+                          <div key={item.label} className="rounded-[1.15rem] border border-white/10 bg-white/[0.03] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                             <p className="text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">{item.label}</p>
                             <p className="mt-3 text-sm leading-6 text-zinc-300">{item.value}</p>
                           </div>

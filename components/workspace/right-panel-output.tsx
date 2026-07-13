@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { buildStyledExportText } from "@/lib/download";
+import type { ExportStyleOptions } from "@/lib/document";
 
 import { panelRevealVariants, draftrSpring } from "@/lib/animation";
 import { type ConvertedDocument } from "@/lib/document";
@@ -14,10 +16,11 @@ interface RightPanelOutputProps {
   editorText: string;
   isLoading?: boolean;
   className?: string;
+  exportStyle?: ExportStyleOptions | null;
 }
 
-export function RightPanelOutput({ document, editorText, isLoading = false, className }: RightPanelOutputProps) {
-  const previewText = editorText;
+export function RightPanelOutput({ document, editorText, isLoading = false, className, exportStyle = null }: RightPanelOutputProps) {
+  const previewText = exportStyle ? buildStyledExportText(editorText, { preset: exportStyle.preset, title: exportStyle.title }) : editorText;
 
   return (
     <motion.section
@@ -26,7 +29,7 @@ export function RightPanelOutput({ document, editorText, isLoading = false, clas
       animate="visible"
       exit="exit"
       transition={draftrSpring}
-      className={cn("flex min-h-0 flex-col bg-zinc-950/70 p-6 sm:p-8", className)}
+      className={cn("flex min-h-0 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 sm:p-8", className)}
     >
       <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">
         <Sparkles className="h-4 w-4 stroke-[1.25]" />

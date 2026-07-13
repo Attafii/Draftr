@@ -129,7 +129,7 @@ export function MagicUploadZone({ onFilesSelected, className, isBusy = false }: 
         disabled={isBusy}
         aria-busy={isBusy}
         className={cn(
-          "relative flex h-full min-h-[520px] w-full flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-zinc-950/95 px-6 py-6 text-left shadow-shell outline-none transition-transform duration-300 focus-visible:ring-1 focus-visible:ring-white/40 sm:px-8 sm:py-8",
+          "relative flex h-full min-h-[520px] w-full flex-col overflow-hidden rounded-[1.85rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.025))] px-6 py-6 text-left shadow-[0_20px_80px_rgba(0,0,0,0.36)] outline-none transition-transform duration-300 focus-visible:ring-1 focus-visible:ring-white/40 sm:px-8 sm:py-8",
           isBusy ? "cursor-progress opacity-90" : "cursor-pointer",
         )}
       >
@@ -146,7 +146,7 @@ export function MagicUploadZone({ onFilesSelected, className, isBusy = false }: 
             <motion.div
               animate={{ scale: isDragActive ? 1.05 : 1, y: isDragActive ? -2 : 0 }}
               transition={draftrSpring}
-              className="mb-7 flex h-16 w-16 items-center justify-center border border-white/10 bg-white/[0.03]"
+              className="mb-7 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
             >
               {isBusy ? (
                 <Sparkles className="h-7 w-7 stroke-[1.25] text-white" />

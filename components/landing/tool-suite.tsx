@@ -416,7 +416,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {FILE_TOOL_GROUPS.map((group) => (
-          <article key={group.title} className="rounded-[1.75rem] border border-white/10 bg-white/[0.03] p-5 shadow-shell sm:p-6">
+          <article key={group.title} className="rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.025))] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.2)] sm:p-6">
             <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-5">
               <div>
                 <p className="font-display text-xl font-semibold tracking-[-0.04em] text-white sm:text-2xl">{group.title}</p>

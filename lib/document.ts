@@ -88,6 +88,16 @@ export interface AiRequestPayload {
   instruction?: string;
 }
 
+export type ExportStylePreset = "editorial" | "minimal" | "studio";
+
+export interface ExportStyleOptions {
+  preset: ExportStylePreset;
+  title: string;
+  fontFamily?: string;
+  fontSize?: number;
+  accentColor?: string;
+}
+
 const STOP_WORDS = new Set([
   "the",
   "and",

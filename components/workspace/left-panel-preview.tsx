@@ -45,7 +45,7 @@ export function LeftPanelPreview({
       animate="visible"
       exit="exit"
       transition={draftrSpring}
-      className={cn("flex min-h-0 flex-col bg-zinc-950/70 p-6 sm:p-8", className)}
+      className={cn("flex min-h-0 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-6 sm:p-8", className)}
     >
       <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.35em] text-zinc-500">
         <FileText className="h-4 w-4 stroke-[1.25]" />
@@ -83,6 +83,74 @@ export function LeftPanelPreview({
                     <PencilLine className="h-4 w-4 stroke-[1.25]" />
                     <span>Editable content</span>
                   </div>
+
+                    <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = markdownTextareaRef.current;
+                        if (!el) return;
+                        const start = el.selectionStart ?? 0;
+                        const end = el.selectionEnd ?? 0;
+                        const val = el.value;
+                        const selected = val.slice(start, end);
+                        const next = `${val.slice(0, start)}**${selected || "bold text"}**${val.slice(end)}`;
+                        onEditorTextChange(next);
+                        setTimeout(() => {
+                          el.focus();
+                          el.selectionStart = start + 2;
+                          el.selectionEnd = start + 2 + (selected || "bold text").length;
+                        }, 0);
+                      }}
+                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                    >
+                      <strong>B</strong>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = markdownTextareaRef.current;
+                        if (!el) return;
+                        const start = el.selectionStart ?? 0;
+                        const end = el.selectionEnd ?? 0;
+                        const val = el.value;
+                        const selected = val.slice(start, end);
+                        const next = `${val.slice(0, start)}*${selected || "italic text"}*${val.slice(end)}`;
+                        onEditorTextChange(next);
+                        setTimeout(() => {
+                          el.focus();
+                          el.selectionStart = start + 1;
+                          el.selectionEnd = start + 1 + (selected || "italic text").length;
+                        }, 0);
+                      }}
+                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                    >
+                      <em>I</em>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const color = window.prompt("Enter hex color (e.g. FF8800)", "FF8800");
+                        if (!color) return;
+                        const hex = color.replace(/[^0-9a-fA-F]/g, "").slice(0, 6).padEnd(6, "0");
+                        const el = markdownTextareaRef.current;
+                        if (!el) return;
+                        const start = el.selectionStart ?? 0;
+                        const end = el.selectionEnd ?? 0;
+                        const val = el.value;
+                        const selected = val.slice(start, end) || "colored text";
+                        const next = `${val.slice(0, start)}<color=#${hex}>${selected}</color>${val.slice(end)}`;
+                        onEditorTextChange(next);
+                        setTimeout(() => {
+                          el.focus();
+                        }, 0);
+                      }}
+                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                    >
+                      Color
+                    </button>
+                  </div>
+
                   <textarea
                     ref={markdownTextareaRef}
                     value={editorText}
