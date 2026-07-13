@@ -407,7 +407,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
         <button
           type="button"
           onClick={onEditShortcut}
-          className="inline-flex items-center gap-2 self-start border border-white/10 bg-white/[0.03] px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+          className="btn-ghost inline-flex items-center gap-2 self-start px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:text-white"
         >
           <Upload className="h-3.5 w-3.5 stroke-[1.25]" />
           Jump to upload
@@ -480,7 +480,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
 
           <SheetHeader className="pb-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center border border-white/10 bg-white/[0.03]">
+              <div className="flex h-10 w-10 items-center justify-center soft-card">
                 {ActiveIcon ? <ActiveIcon className="h-5 w-5 stroke-[1.4]" /> : <Upload className="h-5 w-5 stroke-[1.4]" />}
               </div>
               <div>
@@ -492,7 +492,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
 
           {activeTool ? (
             <div className="space-y-5 border-t border-white/10 pt-6">
-              <div className="border border-white/10 bg-white/[0.03] p-4">
+              <div className="soft-card p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">Files</p>
@@ -577,7 +577,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
               ) : null}
 
               {activeTool === "fill-pdf" ? (
-                <div className="grid gap-4 border border-white/10 bg-white/[0.03] p-4 sm:grid-cols-2">
+                <div className="grid gap-4 soft-card p-4 sm:grid-cols-2">
                   <label className="block space-y-2 sm:col-span-2">
                     <span className="text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">Fill text</span>
                     <textarea
@@ -637,7 +637,7 @@ export function ToolSuite({ currentDocument, onEditShortcut }: ToolSuiteProps) {
               ) : null}
 
               {activeTool === "compress-images" || activeTool === "enhance-image" ? (
-                <div className="border border-white/10 bg-white/[0.03] p-4">
+                <div className="soft-card p-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <label className="block space-y-2">
                       <span className="text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">Max dimension</span>

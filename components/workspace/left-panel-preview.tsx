@@ -102,7 +102,7 @@ export function LeftPanelPreview({
                           el.selectionEnd = start + 2 + (selected || "bold text").length;
                         }, 0);
                       }}
-                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-sm text-zinc-300"
                     >
                       <strong>B</strong>
                     </button>
@@ -123,7 +123,7 @@ export function LeftPanelPreview({
                           el.selectionEnd = start + 1 + (selected || "italic text").length;
                         }, 0);
                       }}
-                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-sm text-zinc-300"
                     >
                       <em>I</em>
                     </button>
@@ -145,7 +145,7 @@ export function LeftPanelPreview({
                           el.focus();
                         }, 0);
                       }}
-                      className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-sm text-zinc-300"
+                      className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-sm text-zinc-300"
                     >
                       Color
                     </button>

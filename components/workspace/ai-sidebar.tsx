@@ -131,7 +131,7 @@ export function AISidebar({
         </SheetHeader>
 
         <div className="space-y-4 border-t border-white/10 pt-6">
-          <div className="border border-white/10 bg-white/[0.03] p-4">
+          <div className="soft-card p-4">
             <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">
               <Wand2 className="h-4 w-4 stroke-[1.25] text-white" />
               <span>{documentName ?? "No document loaded"}</span>
@@ -150,7 +150,7 @@ export function AISidebar({
                 value={requestText}
                 onChange={(event) => onRequestTextChange(event.target.value)}
                 placeholder="Fix structure, improve clarity, and enhance the file."
-                className="min-h-28 w-full resize-none border border-white/10 bg-black/60 p-3 text-sm leading-6 text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/20"
+                className="min-h-28 w-full resize-none border border-white/10 bg-black/50 p-3 text-sm leading-6 text-zinc-200 outline-none transition placeholder:text-zinc-600 focus:border-white/20"
               />
             </label>
 
@@ -160,7 +160,7 @@ export function AISidebar({
                   key={preset.label}
                   type="button"
                   onClick={() => onPresetSelect(preset.value)}
-                  className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-[0.63rem] uppercase tracking-[0.24em] text-zinc-400 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                  className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.63rem] uppercase tracking-[0.24em] text-zinc-400 transition hover:text-white"
                 >
                   {preset.label}
                 </button>
@@ -172,7 +172,7 @@ export function AISidebar({
                 type="button"
                 onClick={onAnalyze}
                 disabled={isLoading || !documentName}
-                className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-accent inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading && loadingMode === "analyze" ? (
                   <RefreshCw className="h-3.5 w-3.5 animate-spin stroke-[1.25]" />
@@ -186,7 +186,7 @@ export function AISidebar({
                 type="button"
                 onClick={onEnhance}
                 disabled={isLoading || !documentName}
-                className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.04] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] transition disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isLoading && loadingMode === "rewrite" ? (
                   <RefreshCw className="h-3.5 w-3.5 animate-spin stroke-[1.25]" />
@@ -209,7 +209,7 @@ export function AISidebar({
           </div>
 
           {errorMessage ? (
-            <div className="border border-red-500/20 bg-red-500/5 p-4 text-sm leading-6 text-red-200">
+            <div className="soft-card p-4 text-sm leading-6 text-red-200" style={{ borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.04)' }}>
               <div className="flex items-center gap-2 text-[0.65rem] uppercase tracking-[0.28em] text-red-300">
                 <ShieldAlert className="h-4 w-4 stroke-[1.25]" />
                 <span>AI fallback</span>
@@ -220,7 +220,7 @@ export function AISidebar({
 
           {isLoading ? (
             <div className="space-y-4">
-              <div className="border border-white/10 bg-white/[0.03] p-4">
+              <div className="soft-card p-4">
                 <div className="h-3 w-32 bg-white/10" />
                 <div className="mt-4 space-y-3">
                   <div className="h-2 w-full bg-white/5" />
@@ -228,7 +228,7 @@ export function AISidebar({
                   <div className="h-2 w-4/5 bg-white/5" />
                 </div>
               </div>
-              <div className="border border-white/10 bg-white/[0.03] p-4">
+              <div className="soft-card p-4">
                 <div className="h-3 w-28 bg-white/10" />
                 <div className="mt-4 space-y-2">
                   <div className="h-2 w-full bg-white/5" />

@@ -19,9 +19,9 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
   const searchHits = useMemo(() => searchDocumentText(text, searchQuery), [text, searchQuery]);
 
   return (
-    <div className={cn("space-y-3 border border-white/10 bg-white/[0.03] p-4", className)}>
+    <div className={cn("space-y-3 soft-card p-4", className)}>
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center border border-white/10 bg-black/40">
+        <div className="flex h-8 w-8 items-center justify-center soft-card">
           <Search className="h-4 w-4 stroke-[1.25] text-white" />
         </div>
         <div>
@@ -52,7 +52,7 @@ export function DocumentNavigator({ text, onJumpToLine, className }: DocumentNav
                 key={hit.id}
                 type="button"
                 onClick={() => onJumpToLine(hit.lineNumber)}
-                className="inline-flex items-center gap-2 border border-white/10 bg-black/30 px-3 py-2 text-left text-[0.63rem] uppercase tracking-[0.24em] text-zinc-400 transition hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-left text-[0.63rem] uppercase tracking-[0.24em] text-zinc-400 transition hover:text-white"
               >
                 <span>Line {hit.lineNumber}</span>
                 <ArrowRight className="h-3 w-3 stroke-[1.25]" />
