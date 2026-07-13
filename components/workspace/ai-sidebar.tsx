@@ -10,6 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { HoverCard, HoverButton } from "@/components/ui/hover";
 import { buildLineDiff, type AiInsight, type AiMode, type RevisionEntry } from "@/lib/document";
 import { draftrSpring } from "@/lib/animation";
 import { cn } from "@/lib/utils";
@@ -131,7 +132,7 @@ export function AISidebar({
         </SheetHeader>
 
         <div className="space-y-4 border-t border-white/10 pt-6">
-          <div className="soft-card p-4">
+          <HoverCard className="soft-card p-4">
             <div className="flex items-center gap-3 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-500">
               <Wand2 className="h-4 w-4 stroke-[1.25] text-white" />
               <span>{documentName ?? "No document loaded"}</span>
@@ -220,21 +221,21 @@ export function AISidebar({
 
           {isLoading ? (
             <div className="space-y-4">
-              <div className="soft-card p-4">
+              <HoverCard className="soft-card p-4">
                 <div className="h-3 w-32 bg-white/10" />
                 <div className="mt-4 space-y-3">
                   <div className="h-2 w-full bg-white/5" />
                   <div className="h-2 w-11/12 bg-white/5" />
                   <div className="h-2 w-4/5 bg-white/5" />
                 </div>
-              </div>
-              <div className="soft-card p-4">
+              </HoverCard>
+              <HoverCard className="soft-card p-4">
                 <div className="h-3 w-28 bg-white/10" />
                 <div className="mt-4 space-y-2">
                   <div className="h-2 w-full bg-white/5" />
                   <div className="h-2 w-10/12 bg-white/5" />
                 </div>
-              </div>
+              </HoverCard>
             </div>
           ) : insight ? (
             <div className="space-y-4">
