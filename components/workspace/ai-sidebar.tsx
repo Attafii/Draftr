@@ -207,7 +207,7 @@ export function AISidebar({
             <p className="mt-3 text-xs leading-5 text-zinc-600">
               Current request: {currentRequest}
             </p>
-          </div>
+          </HoverCard>
 
           {errorMessage ? (
             <div className="soft-card p-4 text-sm leading-6 text-red-200" style={{ borderColor: 'rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.04)' }}>

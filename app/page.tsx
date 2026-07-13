@@ -5,6 +5,7 @@ import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { ArrowRight, Download, FileText, Sparkles, Trash2 } from "lucide-react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { HoverButton } from "@/components/ui/hover";
 import { MagicUploadZone } from "@/components/landing/magic-upload-zone";
 import { ToolSuite } from "@/components/landing/tool-suite";
 import { AISidebar } from "@/components/workspace/ai-sidebar";
@@ -251,14 +252,14 @@ export default function HomePage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
-                      <button
+                      <HoverButton
                         type="button"
                         onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "clean" })}
                         className="btn-accent inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] transition"
                       >
                         <Download className="h-3.5 w-3.5 stroke-[1.25]" />
                         Clean PDF
-                      </button>
+                      </HoverButton>
                       <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-2 py-2">
                         {(["editorial", "minimal", "studio"] as ExportStylePreset[]).map((preset) => (
                           <button
@@ -301,41 +302,41 @@ export default function HomePage() {
 
                         
                       </div>
-                        <button
+                        <HoverButton
                           type="button"
                           onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "print" }, { preset: exportPreset, title: document.fileName, fontFamily: exportStyleDetails.fontFamily, fontSize: exportStyleDetails.fontSize })}
-                          className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                          className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:text-white"
                         >
                           <Download className="h-3.5 w-3.5 stroke-[1.25]" />
                           Design PDF
-                        </button>
-                        <button
+                        </HoverButton>
+                        <HoverButton
                           type="button"
                           onClick={() => downloadMarkdownFile(document.fileName, resolveWorkingText(document, editorText), { preset: "normalized" }, { preset: exportPreset, title: document.fileName, fontFamily: exportStyleDetails.fontFamily, fontSize: exportStyleDetails.fontSize })}
-                          className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                          className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:text-white"
                         >
                           <Download className="h-3.5 w-3.5 stroke-[1.25]" />
                           Styled MD
-                        </button>
-                      <button
+                        </HoverButton>
+                      <HoverButton
                         type="button"
                         onClick={() => {
                           setAiOpen(true);
                           void requestAi("analyze");
                         }}
-                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                        className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:text-white"
                       >
                         <Sparkles className="h-3.5 w-3.5 stroke-[1.25]" />
                         {aiInsight ? "Regenerate insight" : "AI insight"}
-                      </button>
-                      <button
+                      </HoverButton>
+                      <HoverButton
                         type="button"
                         onClick={resetWorkspace}
-                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                        className="btn-ghost inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:text-white"
                       >
                         <Trash2 className="h-3.5 w-3.5 stroke-[1.25]" />
                         Reset
-                      </button>
+                      </HoverButton>
                     </div>
                   </div>
 
