@@ -254,7 +254,7 @@ export default function HomePage() {
                       <button
                         type="button"
                         onClick={() => void downloadPdfFile(document.fileName, resolveWorkingText(document, editorText), { preset: "clean" })}
-                        className="inline-flex items-center gap-2 border border-white/10 bg-white/[0.03] px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
+                        className="btn-accent inline-flex items-center gap-2 px-3 py-2 text-[0.65rem] uppercase tracking-[0.28em] transition"
                       >
                         <Download className="h-3.5 w-3.5 stroke-[1.25]" />
                         Clean PDF
@@ -402,7 +402,7 @@ export default function HomePage() {
                           <button
                             type="button"
                             onClick={() => scrollToSection("magic-upload-zone")}
-                            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] text-black transition hover:bg-zinc-200"
+                            className="btn-accent inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.65rem] uppercase tracking-[0.28em] transition"
                           >
                             Upload file
                             <ArrowRight className="h-3.5 w-3.5 stroke-[1.8]" />

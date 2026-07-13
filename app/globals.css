@@ -5,26 +5,28 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 4%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 6%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 6%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14%;
-  --muted-foreground: 0 0% 63%;
-  --accent: 0 0% 14%;
-  --accent-foreground: 0 0% 98%;
+  /* Friendly modern palette (soft, warm accents) */
+  --background: 220 12% 6%; /* deep navy */
+  --foreground: 210 20% 96%; /* soft off-white */
+  --card: 220 12% 8%;
+  --card-foreground: 210 18% 96%;
+  --popover: 220 12% 8%;
+  --popover-foreground: 210 18% 96%;
+  --primary: 210 100% 100%;
+  --primary-foreground: 220 12% 6%;
+  --secondary: 220 12% 12%;
+  --secondary-foreground: 210 18% 96%;
+  --muted: 220 12% 14%;
+  --muted-foreground: 210 12% 64%;
+  --accent: 285 70% 60%; /* lavender */
+  --accent-2: 192 85% 50%; /* teal */
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 62% 30%;
   --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 0 0% 83%;
-  --radius: 0px;
+  --border: 220 10% 14%;
+  --input: 220 10% 14%;
+  --ring: 210 100% 86%;
+  --radius: 12px;
 }
 
 html {
@@ -49,6 +51,27 @@ body {
 ::selection {
   background: rgba(255, 255, 255, 0.18);
   color: #ffffff;
+}
+
+/* Accent utilities used across the app for a friendlier look */
+.btn-accent {
+  background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-2)));
+  color: hsl(var(--accent-foreground));
+  border: none;
+  box-shadow: 0 6px 20px rgba(33, 18, 56, 0.32);
+}
+
+.btn-accent:active { transform: translateY(1px); }
+
+.btn-ghost {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.soft-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
 .ai-sidebar-scrollbar {
