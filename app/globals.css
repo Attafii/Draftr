@@ -5,33 +5,33 @@
 @tailwind utilities;
 
 :root {
-  /* Friendly modern palette (soft, warm accents) */
-  --background: 220 12% 6%; /* deep navy */
-  --foreground: 210 20% 96%; /* soft off-white */
-  --card: 220 12% 8%;
-  --card-foreground: 210 18% 96%;
-  --popover: 220 12% 8%;
-  --popover-foreground: 210 18% 96%;
-  --primary: 210 100% 100%;
-  --primary-foreground: 220 12% 6%;
-  --secondary: 220 12% 12%;
-  --secondary-foreground: 210 18% 96%;
-  --muted: 220 12% 14%;
-  --muted-foreground: 210 12% 64%;
-  --accent: 285 70% 60%; /* lavender */
-  --accent-2: 192 85% 50%; /* teal */
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 220 10% 14%;
-  --input: 220 10% 14%;
-  --ring: 210 100% 86%;
+  /* SaaS-inspired light palette (no plain black/white) */
+  --background: 210 60% 98%; /* soft off-white */
+  --foreground: 215 14% 12%; /* charcoal text */
+  --card: 210 100% 100%; /* white-ish cards */
+  --card-foreground: 215 14% 12%;
+  --popover: 210 100% 100%;
+  --popover-foreground: 215 14% 12%;
+  --primary: 222 90% 56%; /* vivid azure */
+  --primary-foreground: 210 100% 100%;
+  --secondary: 280 75% 60%; /* soft purple */
+  --secondary-foreground: 210 100% 100%;
+  --muted: 210 16% 94%; /* subtle surface */
+  --muted-foreground: 215 14% 36%;
+  --accent: 14 100% 56%; /* warm orange accent */
+  --accent-2: 192 95% 45%; /* teal accent */
+  --accent-foreground: 210 100% 100%;
+  --destructive: 358 74% 55%;
+  --destructive-foreground: 210 100% 100%;
+  --border: 215 16% 88%; /* light subtle border */
+  --input: 210 16% 96%;
+  --ring: 222 90% 70%;
   --radius: 12px;
 }
 
 html {
-  background: #000000;
-  color-scheme: dark;
+  background: hsl(var(--background));
+  color-scheme: light;
   scroll-behavior: smooth;
 }
 
@@ -49,33 +49,35 @@ body {
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: rgba(34, 100, 255, 0.12);
+  color: hsl(var(--primary-foreground));
 }
 
 /* Accent utilities used across the app for a friendlier look */
 .btn-accent {
-  background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent-2)));
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
   color: hsl(var(--accent-foreground));
   border: none;
-  box-shadow: 0 6px 20px rgba(33, 18, 56, 0.32);
+  box-shadow: 0 8px 30px rgba(34, 50, 120, 0.08);
+  border-radius: 9999px;
 }
 
 .btn-accent:active { transform: translateY(1px); }
 
 .btn-ghost {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
 }
 
 .soft-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
   border-radius: var(--radius);
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 6px 24px rgba(16, 24, 40, 0.04);
 }
 
 .ai-sidebar-scrollbar {
-  scrollbar-color: rgba(255, 255, 255, 0.32) rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(60,80,200,0.35) rgba(0,0,0,0.03);
   scrollbar-width: thin;
   scrollbar-gutter: stable;
 }
@@ -85,15 +87,15 @@ body {
 }
 
 .ai-sidebar-scrollbar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
+  background: hsl(var(--muted));
 }
 
 .ai-sidebar-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.32);
-  border: 2px solid rgba(0, 0, 0, 0.4);
+  background: rgba(34,100,255,0.28);
+  border: 2px solid rgba(255,255,255,0.6);
   border-radius: 9999px;
 }
 
 .ai-sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(34,100,255,0.38);
 }
